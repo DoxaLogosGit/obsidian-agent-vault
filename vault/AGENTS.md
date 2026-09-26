@@ -104,6 +104,10 @@ Keep `skills/` together as one directory, inside the vault. The scripts find the
 - `obsidian:ingest` — ingest any source already in the vault-root `_sources/` (Claude export `.json`/`.zip`, `.md`, `.html`, `.pdf`) and create or update notes with provenance markers. Auto-detects the source type and routes vault-wide, prompting for anything unmatched. Takes no arguments except `--status` and `--files-backlog` (backfills files from chats ingested before 2026-09-14)
 - `obsidian:youtube` — fetch YouTube transcripts into `_sources/` with `fetch_youtube.py`, then run ingest. Takes one or more URLs, plus `--lang` and `--fetch-only`
 - `obsidian:lint-light` — read-only audit: broken wikilinks, orphan sources, stale sources, malformed frontmatter, provenance drift
+- `obsidian:status` — print the time of the last ingest. Same as `obsidian:ingest --status`
+- `obsidian:files-backlog` — backfill chat files into conversations ingested before file support. Same as `obsidian:ingest --files-backlog`
+- `obsidian:retire` — retire and delete ingested sources in `_sources/` with `retire_sources.py`, so the folder does not grow without limit. Takes optional file names. Without them, it lists the candidates
+- `obsidian:fetch-export` — place a Claude data export from `~/Downloads` into `_sources/` with `fetch_export.py`. The user downloads the zips in a signed-in browser. The agent never fetches the links
 
 ## Frontmatter Convention
 

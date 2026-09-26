@@ -137,7 +137,7 @@ sources:
 
 **`retired: true`** means the source file was intentionally deleted after ingest. Because `sources:` is append-only, the entry stays as the permanent lineage record — the hash is retained so the note's derivation is still identifiable. `obsidian-lint-light` skips the stale and drift checks for retired entries and reports them under an informational `Retired sources` count that does not add to the issue total.
 
-Retire with `obsidian-ingest/retire_sources.py --scope <project> [--apply]` (dry run by default) **before** deleting the files — retirement reads each file to capture its hash, which is the last chance to record it. This is the one sanctioned exception to "upgrade flat `sources:` strings only on ingest touch."
+Retire with `obsidian-ingest/retire_sources.py _sources/<file> [...] [--apply] [--delete]` (dry run by default) **before** deleting the files. `--delete` removes each file after its entries are retired. `--scope <project>` retires a whole stray `<project>/_sources/` directory instead. Retirement reads each file to capture its hash, which is the last chance to record it. This is the one sanctioned exception to "upgrade flat `sources:` strings only on ingest touch."
 
 ### `status:` values
 

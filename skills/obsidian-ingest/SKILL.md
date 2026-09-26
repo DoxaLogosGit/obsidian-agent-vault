@@ -14,7 +14,7 @@ Universal entry point for ingesting source files from the **vault-root `_sources
 > **Two kinds of anomaly. Tell them apart before you touch anything.** Check whether the notes that cite these files record them as `retired: true`.
 >
 > - **Retired — a restore or a sync brought back deleted files.** Do not move the files, and do not ingest them. Retirement means the content already reached the notes and the hashes are kept as lineage. A move makes the inventory read them as `verdict: new` and re-ingest what the notes already hold. Report the directory to the user and stop.
-> - **Not retired — genuinely uningested files.** Move them to the vault-root `_sources/` and ingest from there. Delete the directory afterward, retiring the entries first with `retire_sources.py`.
+> - **Not retired — genuinely uningested files.** Move them to the vault-root `_sources/` and ingest from there. Delete the directory afterward, retiring the entries first with `retire_sources.py --scope <project>`.
 >
 > If some files in the directory are retired and some are not, treat each file on its own terms. Do not apply one verdict to the whole directory.
 
@@ -241,11 +241,11 @@ Ids are uuids and cannot collide with Claude ids. Write `message_count` exactly 
 **e. Purge the export when the run ends.** Decided 2026-09-16: a full dump every time means `_sources/` would grow by about 15 MB per export for content the notes already hold. After the human confirms the notes look right:
 
 ```bash
-python3 .agents/skills/obsidian-ingest/retire_sources.py <note paths>   # keeps the hash as lineage
-rm _sources/<export zip>
+python3 .agents/skills/obsidian-ingest/retire_sources.py _sources/<export zip>                   # dry run
+python3 .agents/skills/obsidian-ingest/retire_sources.py _sources/<export zip> --apply --delete  # retire, then delete
 ```
 
-Retire first. The hash stays in the notes, so a re-download of the same export is still recognized. The tracking that matters lives in `ingested_uuids:`, not in the zip.
+Show the human the dry run first. `--delete` removes the zip only when every citing entry is retired and the file has not changed since ingest. If the script prints a warning, it keeps the file. Report the warning and stop. The hash stays in the notes, so a re-download of the same export is still recognized. The tracking that matters lives in `ingested_uuids:`, not in the zip.
 
 ### 5. Process document files
 
