@@ -147,6 +147,7 @@ The retired hash stays in the notes. If you download the same export again, inge
 | `/obsidian-youtube <url> [...]` | Fetch YouTube transcripts, then ingest them. |
 | `/obsidian-files-backlog` | Add chat files to conversations ingested before file support. |
 | `/obsidian-retire [file ...]` | Retire ingested sources and delete them. Asks before it deletes. |
+| `/obsidian-onboard` | Set up an existing vault after `install.py into`: folder roles, note owners, first indexes. |
 | `/obsidian-lint-light` | Audit the vault and write a report to `_meta/`. |
 | `/obsidian-lint-light --rebuild-indexes` | Audit, then regenerate every `index.md`. |
 
@@ -192,7 +193,7 @@ ingested_uuids:
 
 ```
 obsidian-agent-vault/
-├── install.py          installer for a new or an existing vault
+├── install.py          new, into (existing vault), and update
 ├── skills/
 │   ├── obsidian-ingest/                ingest entry point, plus the fetch and retire scripts
 │   ├── obsidian-claude-export-ingest/  the Claude conversation workflow that ingest calls
@@ -201,6 +202,7 @@ obsidian-agent-vault/
 │   ├── obsidian-retire/                retire and delete ingested sources
 │   ├── obsidian-status/                print the time of the last ingest
 │   ├── obsidian-files-backlog/         add chat files to older conversations
+│   ├── obsidian-onboard/               set up an existing vault after install
 │   └── obsidian-lint-light/            read-only audit and index rebuild
 ├── vault/              the starter vault
 │   ├── AGENTS.md       the rules the agent follows
@@ -219,6 +221,7 @@ obsidian-agent-vault/
 | PyYAML | Everything | `pip install pyyaml` |
 | An agent that loads Agent Skills or reads `AGENTS.md` | Running the skills | Claude Code, Codex, OpenCode |
 | [`yt-dlp`](https://github.com/yt-dlp/yt-dlp) | `obsidian-youtube` | `pip install yt-dlp` |
+| [ripgrep](https://github.com/BurntSushi/ripgrep) (`rg`) | Vault search. `AGENTS.md` tells agents to use it, because its glob skips `_sources/` and `_meta/`. Without it, agents fall back to `grep` with noisier results. | `apt install ripgrep`, `dnf install ripgrep`, or `brew install ripgrep` |
 | `pdftotext` (poppler) | PDF sources | `apt install poppler-utils`, `dnf install poppler-utils`, or `brew install poppler` |
 | A browser signed in to claude.ai | Downloading Claude exports | — |
 | Obsidian CLI (`obsidian` on your `PATH`) | The orphan-note check in lint. Optional: lint skips the check without it. | See the Obsidian docs |
@@ -241,16 +244,20 @@ This copies the starter vault, with the example notes, and installs the skills. 
 python3 install.py into ~/ExistingVault
 ```
 
-This adds the skills, `AGENTS.md`, `CLAUDE.md`, `_meta/`, and an empty `_sources/`. It does not copy the example notes. After it runs, do these steps:
+The installer does these things:
 
-1. Edit `_meta/vault-config.yml` and list your own top-level folders. The skills ignore every folder that the config does not list.
-2. Build the indexes:
+1. **Folders.** If the vault has no `_meta/vault-config.yml`, it finds the top-level folders that hold notes and asks `Use these as your note folders? [Y/n]`. Yes writes them into the config. `--yes` skips the question.
+2. **Rules.** It appends the package rules to your `AGENTS.md`, between two marker comments. If you have no `AGENTS.md`, it creates one. It adds the line `@AGENTS.md` to your `CLAUDE.md`, so Claude Code loads the rules. Before it changes either file, it saves a `.bak` copy.
+3. **Skills.** It copies the skills to `.agents/skills/` and links `.claude/skills` to them.
+4. **Support files.** It adds `_meta/` (schema and design log) and an empty `_sources/`. It never copies the example notes. If a file in `_meta/` exists and differs, it keeps yours and writes the package version as `<name>.new`.
 
-   ```bash
-   python3 .agents/skills/obsidian-lint-light/lint.py --rebuild-indexes
-   ```
+Then open the vault with your agent and run `/obsidian-onboard`. It walks you through three steps:
 
-3. Look for `.new` files. The installer never overwrites a file. If a file exists and differs, it writes the package version next to it as `<name>.new`. Merge the two by hand.
+1. **Folder roles.** For each folder, you choose *writable* (ingest may write there), *read-only* (audited, never written), or *ignored*.
+2. **Protect your notes.** A note without an `owner:` field counts as `shared`, so ingest may edit it. The skill offers to mark your existing notes `owner: human`, for all of them or per folder. It shows a dry run first. `set_owner.py` then adds one frontmatter line to each note and changes nothing else.
+3. **Indexes.** It builds the first indexes and summarizes the lint report.
+
+Keep your own agent rules outside the `obsidian-agent-vault` markers in `AGENTS.md`. `update` replaces the text between them.
 
 ### Where the skills go
 
@@ -260,11 +267,10 @@ Both modes copy the skills to `.agents/skills/`. Codex and OpenCode read that fo
 
 ```bash
 git pull
-rm -rf ~/MyVault/.agents/skills
-python3 install.py into ~/MyVault
+python3 install.py update ~/MyVault
 ```
 
-If the installer copied the skills to `.claude/skills` instead of a link, delete that folder too before you run `into`.
+`update` replaces each skill that the package ships. Skills you added yourself stay. It also refreshes the package rules between the markers in `AGENTS.md`. It never touches your notes, `_sources/`, the indexes, or `vault-config.yml`. If the package `schema.md` changed, it writes `_meta/schema.md.new` for you to compare.
 
 ## Configure the folders
 

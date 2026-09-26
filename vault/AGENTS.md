@@ -108,6 +108,7 @@ Keep `skills/` together as one directory, inside the vault. The scripts find the
 - `obsidian:files-backlog` — backfill chat files into conversations ingested before file support. Same as `obsidian:ingest --files-backlog`
 - `obsidian:retire` — retire and delete ingested sources in `_sources/` with `retire_sources.py`, so the folder does not grow without limit. Takes optional file names. Without them, it lists the candidates
 - `obsidian:fetch-export` — place a Claude data export from `~/Downloads` into `_sources/` with `fetch_export.py`. The user downloads the zips in a signed-in browser. The agent never fetches the links
+- `obsidian:onboard` — set up an existing vault after `install.py into`: folder roles in `_meta/vault-config.yml`, `owner:` on existing notes with `set_owner.py`, and the first index build
 
 ## Frontmatter Convention
 
