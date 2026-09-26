@@ -1,0 +1,12 @@
+# Folder lists that the vault skills read. Edit these to change the layout.
+
+# Top-level folders that ingest may write to.
+writable_roots: [Projects, Ideas, Reference]
+
+# Top-level folders that lint audits and indexes. Include every writable root.
+# Add read-only folders here too, for example a folder of owner: human notes.
+audited_roots: [Projects, Ideas, Reference]
+
+# Folders whose descendants share one index.md at the root folder.
+# Use this for trees where each subfolder holds one note.
+index_rollup_roots: []
